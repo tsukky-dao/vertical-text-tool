@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>横書きを縦書きに変換するツール</title>
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            margin: 20px;
+        }
+        pre {
+            font-size: 16px;
+            line-height: 1.5;
+            white-space: pre;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        textarea {
+            width: 100%;
+            max-width: 400px;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        input[type="text"] {
+            width: 80px;
+            padding: 5px;
+            margin-right: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin: 5px 0;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        #copyButton, #tweetButton {
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            body {
+                margin: 10px;
+            }
+            pre {
+                font-size: 14px;
+            }
+            textarea {
+                height: 80px;
+            }
+            input[type="text"] {
+                width: 60px;
+            }
+            button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>横書きを縦書きに変換するツール</h2>
+    <textarea id="inputText" placeholder="ここに横書きの文章を入力（改行で区切る）"></textarea><br>
+    <label>区切り文字: 
+        <input type="text" id="delimiter" value="｜" placeholder="例: ｜">
+    </label>
+    <button onclick="convertToVertical()">縦書きに変換</button><br>
+    <div id="output"></div>
+    <button id="copyButton" onclick="copyToClipboard()" style="display:none;">コピー</button>
+    <button id="tweetButton" onclick="tweetText()" style="display:none;">Xに投稿</button>
+
+    <script>
+        let convertedText = '';
+
+        function convertToVertical() {
+            const inputText = document.getElementById('inputText').value;
+            const delimiter = document.getElementById('delimiter').value || '｜';
+            const lines = inputText.split('\n').filter(line => line.trim() !== '');
+            
+            if (lines.length > 8) {
+                alert('最大8行までです。');
+                return;
+            }
+            
+            const maxLength = Math.max(...lines.map(line => line.length));
+            let verticalLines = '';
+            
+            for (let i = 0; i < maxLength; i++) {
+                let row = '';
+                for (let j = lines.length - 1; j >= 0; j--) {
+                    const char = lines[j][i] || '　';
+                    row += char + delimiter;
+                }
+                verticalLines += row.slice(0, -1) + '\n';
+            }
+            
+            convertedText = verticalLines;
+            const output = document.getElementById('output');
+            output.innerHTML = `<pre>${convertedText}</pre>`;
+            document.getElementById('copyButton').style.display = 'block';
+            document.getElementById('tweetButton').style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(convertedText).then(() => {
+                alert('コピーしました！');
+            }).catch(err => {
+                console.error('コピーに失敗しました: ', err);
+            });
+        }
+
+        function tweetText() {
+            const encodedText = encodeURIComponent(convertedText);
+            window.open(`https://twitter.com/intent/tweet?text=${encodedText}`, '_blank');
+        }
+    </script>
+</body>
+</html>
